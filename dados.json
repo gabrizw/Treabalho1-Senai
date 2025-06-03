@@ -1,0 +1,14 @@
+[
+    {
+        "data": "2025-03-30",
+        "quantidade_produzida": "9597",
+        "quantidade_refugo": "142",
+        "tempo_producao": "25"
+    },
+    {
+        "data": "2025-10-01",
+        "quantidade_produzida": "30210",
+        "quantidade_refugo": "1032",
+        "tempo_producao": "142"
+    }
+]
