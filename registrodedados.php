@@ -1,5 +1,8 @@
 <?php
 session_start();
+date_default_timezone_set('America/Sao_Paulo');
+$data_hora_sp = date('D-m-y H:i:s');
+
 if (!isset($_SESSION['usuario'])) {
     header("Location: index.php");
     exit();
@@ -133,10 +136,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <h2>Registro de Produção</h2>
                 <form action="registrodedados.php" method="POST">
-                    <div class="mb-3">
-                        <label for="data" class="form-label">Data</label>
-                        <input type="date" class="form-control" id="data" name="data" required>
-                    </div>
+                    <input type="date" class="form-control" id="data" name="data" required>
+                    <script>
+                        var data = document.getElementById("data").valueAsDate = new Date();
+                        function obterDataSp(data) {
+                        const dataSp = new Date();
+                        dataSp.setHours(dataSp.getHours() - 3); 
+                        return dataSp;
+                        }
+
+                        const dataSp = obterDataSp();
+                    </script>
                     <div class="mb-3">
                         <label for="quantidade_produzida" class="form-label">Quantidade Produzida</label>
                         <input type="number" class="form-control" id="quantidade_produzida" name="quantidade_produzida" required placeholder="Digite a quantidade produzida">
