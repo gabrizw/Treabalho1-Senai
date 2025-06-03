@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 if (!isset($_SESSION['usuario'])) {
     header("Location: index.php");
@@ -18,6 +19,22 @@ if (!isset($_SESSION['nomes'])) {
     $nomes = $_SESSION['nomes'];
 }
 $dados = json_decode(file_get_contents("dados.json"), true);
+$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
+$dados_filtrados = [];
+if ($busca !== '' && !empty($dados)) {
+    foreach ($dados as $registro) {
+        if (
+            stripos($registro["data"], $busca) !== false ||
+            stripos($registro["quantidade_produzida"], $busca) !== false ||
+            stripos($registro["quantidade_refugo"], $busca) !== false ||
+            stripos($registro["tempo_producao"], $busca) !== false
+        ) {
+            $dados_filtrados[] = $registro;
+        }
+    }
+} else {
+    $dados_filtrados = $dados;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -35,6 +52,7 @@ $dados = json_decode(file_get_contents("dados.json"), true);
         .table thead { background: #e0bb9c; color: #fff; }
         .table tbody tr td { color: #6d4c2b; }
         .table th, .table td { vertical-align: middle; }
+        .btn.btn-primary { background: #e0bb9c; border-color: #e0bb9c; }
         .dados-title { color: #e0bb9c; font-weight: bold; margin-bottom: 2rem; text-align: center; }
         @media (max-width: 576px) {
             .navbar-custom { flex-direction: column; text-align: center; }
@@ -57,6 +75,15 @@ $dados = json_decode(file_get_contents("dados.json"), true);
     </nav>
     <div class="container mb-5">
         <h2 class="dados-title">Registros de Produção</h2>
+        <form method="get" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="busca" class="form-control" placeholder="Buscar por qualquer campo..." value="<?= htmlspecialchars($busca) ?>">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+                <?php if($busca !== ''): ?>
+                    <a href="dados.php" class="btn btn-secondary">Limpar</a>
+                <?php endif; ?>
+            </div>
+        </form>
         <div class="table-responsive">
             <table class="table table-bordered table-custom">
                 <thead>
@@ -68,8 +95,8 @@ $dados = json_decode(file_get_contents("dados.json"), true);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!empty($dados)): ?>
-                        <?php foreach ($dados as $registro): ?>
+                    <?php if (!empty($dados_filtrados)): ?>
+                        <?php foreach ($dados_filtrados as $registro): ?>
                             <tr>
                                 <td><?= htmlspecialchars($registro["data"]) ?></td>
                                 <td><?= htmlspecialchars($registro["quantidade_produzida"]) ?></td>
