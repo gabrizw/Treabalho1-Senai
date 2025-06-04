@@ -83,7 +83,8 @@ $limite_retrabalhos = array_map(fn($v) => round($v * 0.02), $vendas);
         <div class="brand">SAPATARIA</div>
         <div class="d-flex align-items-center">
             <a href="inicial.php" class="text-white me-3" style="color:#fff;text-decoration: none;">INICIO</a>
-            <a href="dados.php" class="text-white me-3" style="color:#fff;text-decoration: none;">REGISTRAR DADOS</a>
+            <a href="registrodedados.php" class="me-3" style="color:#fff;text-decoration: none;">REGISTRAR DADOS</a>
+            <a href="dados.php" class="me-3" style="color:#fff;text-decoration: none;">DADOS</a>
         <div class="user">
             <?php echo $nomes[$id]; ?> | <a href="sair.php" style="color:#fff;text-decoration:none;">SAIR</a>
         </div>
@@ -273,7 +274,6 @@ $limite_retrabalhos = array_map(fn($v) => round($v * 0.02), $vendas);
             }
         });
     </script>
-
 </body>
 </html>
  
