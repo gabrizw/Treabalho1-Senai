@@ -24,11 +24,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $dados = json_decode(file_get_contents("dados.json"), true);
 
     $novo_registro = [
-        "data" => $_POST["data"],
-        "quantidade_produzida" => $_POST["quantidade_produzida"],
-        "quantidade_refugo" => $_POST["quantidade_refugo"],
-        "tempo_producao" => $_POST["tempo_producao"]
+    "data" => $data_hora_sp,
+    "quantidade_produzida" => $_POST["quantidade_produzida"],
+    "quantidade_refugo" => $_POST["quantidade_refugo"],
+    "reproducao" => $_POST["reproducao"]
     ];
+
+    
 
     $dados[] = $novo_registro;
 
@@ -52,6 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .navbar-custom .user { color: #fff; font-weight: 500; }
         .dados-card {
             background: #fff;
+
             border-radius: 18px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             padding: 2.5rem 2rem 2rem 2rem;
@@ -125,8 +128,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </nav>
-    <div class="container d-flex justify-content-center align-items-center min-vh-100" style="background: none;">
-        <div>
+    <div class="container d-flex justify-content-center align-items-center min-vh-150" style="background: none;">
+        <div class="w-100 d-flex justify-content-center align-items-center" style="min-height: 80vh;">
             <div class="dados-card">
                 <div class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#bfa88b" class="bi bi-card-text" viewBox="0 0 16 16">
@@ -136,17 +139,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <h2>Registro de Produção</h2>
                 <form action="registrodedados.php" method="POST">
-                    <input type="date" class="form-control" id="data" name="data" required>
-                    <script>
-                        var data = document.getElementById("data").valueAsDate = new Date();
-                        function obterDataSp(data) {
-                        const dataSp = new Date();
-                        dataSp.setHours(dataSp.getHours() - 3); 
-                        return dataSp;
-                        }
-
-                        const dataSp = obterDataSp();
-                    </script>
                     <div class="mb-3">
                         <label for="quantidade_produzida" class="form-label">Quantidade Produzida</label>
                         <input type="number" class="form-control" id="quantidade_produzida" name="quantidade_produzida" required placeholder="Digite a quantidade produzida">
@@ -156,12 +148,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="number" class="form-control" id="quantidade_refugo" name="quantidade_refugo" required placeholder="Digite a quantidade de refugo">
                     </div>
                     <div class="mb-3">
-                        <label for="tempo_producao" class="form-label">Tempo de Produção (em minutos)</label>
-                        <input type="number" class="form-control" id="tempo_producao" name="tempo_producao" required placeholder="Digite o tempo de produção">
+                        <label for="reproducao" class="form-label">Quantidade de Reproduções</label>
+                        <input type="number" class="form-control" id="reproducao" name="reproducao" required placeholder="Digite o tempo de produção">
                     </div>
                     <button type="submit" class="btn btn-dados w-100">Registrar</button>
                 </form>
             </div>
+        </div>
         </div>
     </div>
 </body>
