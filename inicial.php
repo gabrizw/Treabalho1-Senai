@@ -29,6 +29,16 @@ $limite_retrabalhos = array_map(fn($v) => round($v * 0.02), $vendas);
 
 $retrabalhos = array_map(fn($v) => round($v * 0.2), $vendas);
 $limite_retrabalhos = array_map(fn($v) => round($v * 0.02), $vendas);
+
+$dados = [
+    [
+        "nome" => "Gabriel",
+        "email" => "gaba@teste.com",
+        "senha" => "121",
+    ]
+];
+$json = file_get_contents("dados.json");
+$dados = json_decode($json, true);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
