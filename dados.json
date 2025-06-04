@@ -1,14 +1,14 @@
 [
     {
-        "data": "2025-03-30",
-        "quantidade_produzida": "9597",
-        "quantidade_refugo": "142",
-        "tempo_producao": "25"
+        "data": "Wed-06-25 14:59:14",
+        "quantidade_produzida": "1231",
+        "quantidade_refugo": "123",
+        "reproducao": "12"
     },
     {
-        "data": "2025-10-01",
-        "quantidade_produzida": "30210",
-        "quantidade_refugo": "1032",
-        "tempo_producao": "142"
+        "data": "Wed-06-25 15:02:00",
+        "quantidade_produzida": "131",
+        "quantidade_refugo": "12",
+        "reproducao": "12"
     }
 ]
