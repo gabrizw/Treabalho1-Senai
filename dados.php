@@ -35,6 +35,23 @@ if ($busca !== '' && !empty($dados)) {
 } else {
     $dados_filtrados = $dados;
 }
+$dados = [
+    [
+        "data" => "Wed-06-25 14:59:14",
+        "quantidade_produzida" => "1231",
+        "quantidade_refugo" => "123",
+        "reproducao" => "12"
+    ],
+    [
+        "data" => "Wed-06-25 15:02:00",
+        "quantidade_produzida" => "131",
+        "quantidade_refugo" => "12",
+        "reproducao" => "12"
+    ]
+]; 
+file_put_contents("dados.json", json_encode($dados, JSON_PRETTY_PRINT));
+$json = file_get_contents("dados.json");
+$dados = json_decode($json, true);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
