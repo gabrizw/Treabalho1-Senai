@@ -91,7 +91,7 @@ if ($busca !== '' && !empty($dados)) {
                         <th>Data</th>
                         <th>Produzido</th>
                         <th>Refugo</th>
-                        <th>Tempo (min)</th>
+                        <th>Reproduções</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -101,7 +101,7 @@ if ($busca !== '' && !empty($dados)) {
                                 <td><?= htmlspecialchars($registro["data"]) ?></td>
                                 <td><?= htmlspecialchars($registro["quantidade_produzida"]) ?></td>
                                 <td><?= htmlspecialchars($registro["quantidade_refugo"]) ?></td>
-                                <td><?= htmlspecialchars($registro["tempo_producao"]) ?></td>
+                                <td><?= htmlspecialchars($registro["reproducao"]) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
