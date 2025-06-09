@@ -35,20 +35,39 @@ if ($busca !== '' && !empty($dados)) {
 } else {
     $dados_filtrados = $dados;
 }
-$dados = [
-    [
-        "data" => "Wed-06-25 14:59:14",
-        "quantidade_produzida" => "1231",
-        "quantidade_refugo" => "123",
-        "reproducao" => "12"
-    ],
-    [
-        "data" => "Wed-06-25 15:02:00",
-        "quantidade_produzida" => "131",
-        "quantidade_refugo" => "12",
-        "reproducao" => "12"
-    ]
-]; 
+
+function calcularTaxaProducao($quantidade_produzida, $reproducao) {
+    if ($reproducao == 0) return 0;
+    return $quantidade_produzida / $reproducao;
+}
+
+
+function calcularTaxaRefugo($quantidade_refugo, $quantidade_produzida) {
+    if ($quantidade_produzida == 0) return 0;
+    return $quantidade_refugo / $quantidade_produzida;
+}
+
+
+$dados = [];
+if (file_exists("dados.json")) {
+    $dados = json_decode(file_get_contents("dados.json"), true);
+    foreach ($dados as $k => $registro) {
+        $taxa_producao = calcularTaxaProducao(
+            $registro['quantidade_produzida'],
+            $registro['reproducao']
+        );
+        $taxa_refugo = calcularTaxaRefugo(
+            $registro['quantidade_refugo'],
+            $registro['quantidade_produzida']
+        );
+        $dados[$k]['taxa_producao'] = $taxa_producao;
+        $dados[$k]['taxa_refugo'] = $taxa_refugo;
+    }
+
+}
+
+
+
 file_put_contents("dados.json", json_encode($dados, JSON_PRETTY_PRINT));
 $json = file_get_contents("dados.json");
 $dados = json_decode($json, true);
@@ -94,7 +113,7 @@ $dados = json_decode($json, true);
         <h2 class="dados-title">Registros de Produção</h2>
         <form method="get" class="mb-3">
             <div class="input-group">
-                <input type="text" name="busca" class="form-control" placeholder="Buscar por qualquer campo..." value="<?= htmlspecialchars($busca) ?>">
+                <input type="text" name="busca" class="form-control" placeholder="Buscar por uma data" value="<?= htmlspecialchars($busca) ?>">
                 <button class="btn btn-primary" type="submit">Buscar</button>
                 <?php if($busca !== ''): ?>
                     <a href="dados.php" class="btn btn-secondary">Limpar</a>
