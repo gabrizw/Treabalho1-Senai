@@ -1,14 +1,10 @@
 [
     {
-        "data": "Wed-06-25 14:59:14",
-        "quantidade_produzida": "1231",
-        "quantidade_refugo": "123",
-        "reproducao": "12"
-    },
-    {
-        "data": "Wed-06-25 15:02:00",
-        "quantidade_produzida": "13001",
-        "quantidade_refugo": "120",
-        "reproducao": "172"
+        "data": "09-06-25 04:43:29",
+        "quantidade_produzida": "154",
+        "quantidade_refugo": "12",
+        "reproducao": "14",
+        "taxa_producao": 11,
+        "taxa_refugo": 0.07792207792207792
     }
 ]
