@@ -1,7 +1,7 @@
 <?php
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
-$data_hora_sp = date('D-m-y H:i:s');
+$data_hora_sp = date('d-m-y h:i:s');
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: index.php");
@@ -30,7 +30,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     "reproducao" => $_POST["reproducao"]
     ];
 
-    
+function calcularTaxaProducao($quantidade_produzida, $reproducao) {
+    if ($reproducao == 0) return 0;
+    return $quantidade_produzida / $reproducao;
+}
+
+
+function calcularTaxaRefugo($quantidade_refugo, $quantidade_produzida) {
+    if ($quantidade_produzida == 0) return 0;
+    return $quantidade_refugo / $quantidade_produzida;
+}
+
+
+$dados = [];
+if (file_exists("dados.json")) {
+    $dados = json_decode(file_get_contents("dados.json"), true);
+    foreach ($dados as $k => $registro) {
+        $taxa_producao = calcularTaxaProducao(
+            $registro['quantidade_produzida'],
+            $registro['reproducao']
+        );
+        $taxa_refugo = calcularTaxaRefugo(
+            $registro['quantidade_refugo'],
+            $registro['quantidade_produzida']
+        );
+        $dados[$k]['taxa_producao'] = $taxa_producao;
+        $dados[$k]['taxa_refugo'] = $taxa_refugo;
+    }
+
+}
+
+
 
     $dados[] = $novo_registro;
 
