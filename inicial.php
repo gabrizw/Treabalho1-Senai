@@ -1,42 +1,44 @@
 <?php
 session_start();
-    if (!isset($_SESSION['usuario'])) {
-        header("Location: index.php");
-        exit();
-    }
-    if (!isset($_SESSION['nomes'])) {
-        $emails = json_decode(file_get_contents("email.json"), true);
-        $senhas = json_decode(file_get_contents("senha.json"), true);
-        $nomes = json_decode(file_get_contents("nome.json"), true);
-        $id = array_search($_SESSION['usuario'], $emails);
-        $_SESSION['nomes'] = $nomes;
-        $_SESSION['emails'] = $emails;
-        $_SESSION['senhas'] = $senhas;
-    }
-    else {
-        $emails = $_SESSION['emails'];
-        $id = array_search($_SESSION['usuario'], $emails);
-        $nomes = $_SESSION['nomes'];
-    }
+if (!isset($_SESSION['usuario'])) {
+    header("Location: index.php");
+    exit();
+}
+if (!isset($_SESSION['nomes'])) {
+    $emails = json_decode(file_get_contents("email.json"), true);
+    $senhas = json_decode(file_get_contents("senha.json"), true);
+    $nomes = json_decode(file_get_contents("nome.json"), true);
+    $id = array_search($_SESSION['usuario'], $emails);
+    $_SESSION['nomes'] = $nomes;
+    $_SESSION['emails'] = $emails;
+    $_SESSION['senhas'] = $senhas;
+} else {
+    $emails = $_SESSION['emails'];
+    $id = array_search($_SESSION['usuario'], $emails);
+    $nomes = $_SESSION['nomes'];
+}
+
 $vendas = [140, 160, 130, 150, 170, 120, 130];
 $ganhos = array_map(fn($v) => $v * 50, $vendas);
 $perdas = [10, 12, 8, 15, 9, 11, 10];
 $dias = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
-$retrabalhos = array_map(fn($v) => round($v * 0.2), $vendas); 
-$limite_retrabalhos = array_map(fn($v) => round($v * 0.02), $vendas); 
-
-
 $retrabalhos = array_map(fn($v) => round($v * 0.2), $vendas);
 $limite_retrabalhos = array_map(fn($v) => round($v * 0.02), $vendas);
+$refugos = array_map(fn($p) => round($p * 0.3), $perdas);
+$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
+$taxas_producao = [];
+$taxas_refugo = [];
 
-$dados = [
-    [
-        "nome" => "Gabriel",
-        "email" => "gaba@teste.com",
-        "senha" => "121",
-    ]
-];
+foreach ($vendas as $i => $venda) {
+    $retrabalho = $retrabalhos[$i];
+    $perda = $perdas[$i];
+    $refugo = $refugos[$i];
+
+    $taxas_producao[] = $venda > 0 ? round((($venda - $retrabalho) / $venda) * 100, 1) : 0;
+    $taxas_refugo[] = $perda > 0 ? round(($refugo / $perda) * 100, 1) : 0;
+}
+
 $json = file_get_contents("dados.json");
 $dados = json_decode($json, true);
 ?>
@@ -85,6 +87,10 @@ $dados = json_decode($json, true);
             display: flex;
             align-items: center;
         }
+        table th, table td {
+            color: #333;
+        }
+        .btn.btn-primary { background: #e0bb9c; border-color: #e0bb9c; }
     </style>
 
 </head>
@@ -99,7 +105,17 @@ $dados = json_decode($json, true);
             <?php echo $nomes[$id]; ?> | <a href="sair.php" style="color:#fff;text-decoration:none;">SAIR</a>
         </div>
     </nav>
+        
     <div class="container">
+         <form method="get" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="busca" class="form-control" placeholder="Buscar por uma data (ainda não está funcional)" value="<?= htmlspecialchars($busca) ?>">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+                <?php if($busca !== ''): ?>
+                    <a href="inicial.php" class="btn btn-secondary">Limpar</a>
+                <?php endif; ?>
+            </div>
+        </form>
         <div class="row g-4">
             <div class="col-12 col-md-3">
                 <div class="card text-center">
@@ -112,19 +128,19 @@ $dados = json_decode($json, true);
             </div>
             <div class="col-6 col-md-3">
                 <div class="card text-center">
-                    <div class="card-header">Ganhos</div>
+                    <div class="card-header">Tolerância de retrabalho</div>
                     <div class="card-body">
-                        <div class="stat">R$ <?php echo number_format(array_sum($ganhos),2,',','.'); ?></div>
-                        <div class="stat-label">Total na semana</div>
+                        <div class="stat">2%</div>
+                        <div class="stat-label">Tolerância de retrabalho</div>
                     </div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="card text-center">
-                    <div class="card-header">Perdas</div>
+                    <div class="card-header">Trabalhadores</div>
                     <div class="card-body">
-                        <div class="stat">R$ <?php echo number_format(array_sum($perdas),2,',','.'); ?></div>
-                        <div class="stat-label">Total na semana</div>
+                        <div class="stat">8</div>
+                        <div class="stat-label">Trabalhadores</div>
                     </div>
                 </div>
             </div>
@@ -168,6 +184,41 @@ $dados = json_decode($json, true);
                     </div>
                     <div class="card-body">
                         <canvas id="refugosChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header text-center">Tabela de Dados e Indicadores</div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead class="table">
+                                <tr>
+                                    <th>Dia</th>
+                                    <th>Vendas</th>
+                                    <th>Retrabalhos</th>
+                                    <th>Perdas</th>
+                                    <th>Refugos</th>
+                                    <th>Taxa de Produção (%)</th>
+                                    <th>Taxa de Refugo (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($dias as $i => $dia): ?>
+                                    <tr>
+                                        <td><?= $dia ?></td>
+                                        <td><?= $vendas[$i] ?></td>
+                                        <td><?= $retrabalhos[$i] ?></td>
+                                        <td><?= $perdas[$i] ?></td>
+                                        <td><?= $refugos[$i] ?></td>
+                                        <td><?= $taxas_producao[$i] ?>%</td>
+                                        <td><?= $taxas_refugo[$i] ?>%</td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -228,8 +279,6 @@ $dados = json_decode($json, true);
             }
         });
 
-        const gastos = <?php echo json_encode([80, 95, 70, 110, 90, 85, 100]); ?>;
-
         const ctxGastos = document.getElementById('gastosChart').getContext('2d');
         const gastosChart = new Chart(ctxGastos, {
             type: 'bar',
@@ -237,7 +286,7 @@ $dados = json_decode($json, true);
                 labels: <?php echo json_encode($dias); ?>,
                 datasets: [{
                     label: 'Gastos Diários (R$)',
-                    data: gastos,
+                    data: <?php echo json_encode([80, 95, 70, 110, 90, 85, 100]); ?>,
                     backgroundColor: 'rgba(233,46,66,0.5)',
                     borderColor: '#e92e42',
                     borderWidth: 2
@@ -256,8 +305,6 @@ $dados = json_decode($json, true);
             }
         });
 
-
-        const refugos = <?php echo json_encode(array_map(fn($p) => round($p * 0.3), $perdas)); ?>;
         const ctxRefugos = document.getElementById('refugosChart').getContext('2d');
         const refugosChart = new Chart(ctxRefugos, {
             type: 'bar',
@@ -265,7 +312,7 @@ $dados = json_decode($json, true);
                 labels: <?php echo json_encode($dias); ?>,
                 datasets: [{
                     label: 'Refugos Perdidos',
-                    data: refugos,
+                    data: <?php echo json_encode($refugos); ?>,
                     backgroundColor: 'rgba(73,34,110,0.5)',
                     borderColor: '#49226e',
                     borderWidth: 2
@@ -286,4 +333,3 @@ $dados = json_decode($json, true);
     </script>
 </body>
 </html>
- 
