@@ -1,10 +1,10 @@
 <?php
-
 session_start();
 if (!isset($_SESSION['usuario'])) {
     header("Location: index.php");
     exit();
 }
+
 if (!isset($_SESSION['nomes'])) {
     $emails = json_decode(file_get_contents("email.json"), true);
     $senhas = json_decode(file_get_contents("senha.json"), true);
@@ -18,16 +18,34 @@ if (!isset($_SESSION['nomes'])) {
     $id = array_search($_SESSION['usuario'], $emails);
     $nomes = $_SESSION['nomes'];
 }
-$dados = json_decode(file_get_contents("dados.json"), true);
+
 $busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
+$dados = file_exists("dados.json") ? json_decode(file_get_contents("dados.json"), true) : [];
+
+function calcularTaxaProducao($quantidade_produzida, $meta) {
+    if ($meta == 0) return 0;
+    return ($quantidade_produzida / $meta) * 100;
+}
+
+function calcularTaxaRefugo($quantidade_refugo, $quantidade_produzida) {
+    if ($quantidade_produzida == 0) return 0;
+    return ($quantidade_refugo / $quantidade_produzida) * 100;
+}
+
+function calcularTempoMedioProducao($quantidade_produzida, $horas_trabalhadas) {
+    if ($horas_trabalhadas == 0) return 0;
+    return $quantidade_produzida / $horas_trabalhadas;
+}
+
+
+
 $dados_filtrados = [];
 if ($busca !== '' && !empty($dados)) {
     foreach ($dados as $registro) {
         if (
             stripos($registro["data"], $busca) !== false ||
             stripos($registro["quantidade_produzida"], $busca) !== false ||
-            stripos($registro["quantidade_refugo"], $busca) !== false ||
-            stripos($registro["tempo_producao"], $busca) !== false
+            stripos($registro["quantidade_refugo"], $busca) !== false
         ) {
             $dados_filtrados[] = $registro;
         }
@@ -35,42 +53,6 @@ if ($busca !== '' && !empty($dados)) {
 } else {
     $dados_filtrados = $dados;
 }
-
-function calcularTaxaProducao($quantidade_produzida, $reproducao) {
-    if ($reproducao == 0) return 0;
-    return $quantidade_produzida / $reproducao;
-}
-
-
-function calcularTaxaRefugo($quantidade_refugo, $quantidade_produzida) {
-    if ($quantidade_produzida == 0) return 0;
-    return $quantidade_refugo / $quantidade_produzida;
-}
-
-
-$dados = [];
-if (file_exists("dados.json")) {
-    $dados = json_decode(file_get_contents("dados.json"), true);
-    foreach ($dados as $k => $registro) {
-        $taxa_producao = calcularTaxaProducao(
-            $registro['quantidade_produzida'],
-            $registro['reproducao']
-        );
-        $taxa_refugo = calcularTaxaRefugo(
-            $registro['quantidade_refugo'],
-            $registro['quantidade_produzida']
-        );
-        $dados[$k]['taxa_producao'] = $taxa_producao;
-        $dados[$k]['taxa_refugo'] = $taxa_refugo;
-    }
-
-}
-
-
-
-file_put_contents("dados.json", json_encode($dados, JSON_PRETTY_PRINT));
-$json = file_get_contents("dados.json");
-$dados = json_decode($json, true);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -105,7 +87,7 @@ $dados = json_decode($json, true);
             <a href="registrodedados.php" class="me-3" style="color:#fff;text-decoration: none;">REGISTRAR DADOS</a>
             <a href="dados.php" class="me-3" style="color:#fff;text-decoration: none;">DADOS</a>
             <div class="user">
-                <?php if(isset($nomes[$id])) { echo $nomes[$id]; } ?> | <a href="sair.php" style="color:#fff;text-decoration:none;">SAIR</a>
+                <?= isset($nomes[$id]) ? $nomes[$id] : '' ?> | <a href="sair.php" style="color:#fff;text-decoration:none;">SAIR</a>
             </div>
         </div>
     </nav>
@@ -127,7 +109,10 @@ $dados = json_decode($json, true);
                         <th>Data</th>
                         <th>Produzido</th>
                         <th>Refugo</th>
-                        <th>Reproduções</th>
+                        <th>Retrabalho</th>
+                        <th>Horas Trabalhadas</th>
+                        <th>Taxa de Produção (%)</th>
+                        <th>Taxa de Refugo (%)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,12 +122,15 @@ $dados = json_decode($json, true);
                                 <td><?= htmlspecialchars($registro["data"]) ?></td>
                                 <td><?= htmlspecialchars($registro["quantidade_produzida"]) ?></td>
                                 <td><?= htmlspecialchars($registro["quantidade_refugo"]) ?></td>
-                                <td><?= htmlspecialchars($registro["reproducao"]) ?></td>
+                                <td><?= htmlspecialchars($registro["retrabalho"]) ?></td>
+                                <td><?= htmlspecialchars($registro["horas_trabalhadas"]) ?></td>
+                                <td><?= number_format($registro["taxa_producao"], 2) ?>%</td>
+                                <td><?= number_format($registro["taxa_refugo"], 2) ?>%</td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="4" class="text-center">Nenhum registro encontrado.</td>
+                            <td colspan="8" class="text-center">Nenhum registro encontrado.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
