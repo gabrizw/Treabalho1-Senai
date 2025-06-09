@@ -7,6 +7,7 @@ if (!isset($_SESSION['usuario'])) {
     header("Location: index.php");
     exit();
 }
+
 if (!isset($_SESSION['nomes'])) {
     $emails = json_decode(file_get_contents("email.json"), true);
     $senhas = json_decode(file_get_contents("senha.json"), true);
@@ -20,47 +21,37 @@ if (!isset($_SESSION['nomes'])) {
     $id = array_search($_SESSION['usuario'], $emails);
     $nomes = $_SESSION['nomes'];
 }
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $dados = json_decode(file_get_contents("dados.json"), true);
 
-    $novo_registro = [
-    "data" => $data_hora_sp,
-    "quantidade_produzida" => $_POST["quantidade_produzida"],
-    "quantidade_refugo" => $_POST["quantidade_refugo"],
-    "reproducao" => $_POST["reproducao"]
-    ];
-
-function calcularTaxaProducao($quantidade_produzida, $reproducao) {
-    if ($reproducao == 0) return 0;
-    return $quantidade_produzida / $reproducao;
+function calcularTaxaProducao($quantidade_produzida, $meta) {
+    if ($meta == 0) return 0;
+    return ($quantidade_produzida / $meta) * 100;
 }
-
 
 function calcularTaxaRefugo($quantidade_refugo, $quantidade_produzida) {
     if ($quantidade_produzida == 0) return 0;
-    return $quantidade_refugo / $quantidade_produzida;
+    return ($quantidade_refugo / $quantidade_produzida) * 100;
 }
 
-
-$dados = [];
-if (file_exists("dados.json")) {
-    $dados = json_decode(file_get_contents("dados.json"), true);
-    foreach ($dados as $k => $registro) {
-        $taxa_producao = calcularTaxaProducao(
-            $registro['quantidade_produzida'],
-            $registro['reproducao']
-        );
-        $taxa_refugo = calcularTaxaRefugo(
-            $registro['quantidade_refugo'],
-            $registro['quantidade_produzida']
-        );
-        $dados[$k]['taxa_producao'] = $taxa_producao;
-        $dados[$k]['taxa_refugo'] = $taxa_refugo;
-    }
-
+function calcularTempoMedioProducao($quantidade_produzida, $horas_trabalhadas) {
+    if ($horas_trabalhadas == 0) return 0;
+    return $quantidade_produzida / $horas_trabalhadas;
 }
 
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $dados = file_exists("dados.json") ? json_decode(file_get_contents("dados.json"), true) : [];
 
+    $novo_registro = [
+        "data" => $data_hora_sp,
+        "quantidade_produzida" => $_POST["quantidade_produzida"],
+        "quantidade_refugo" => $_POST["quantidade_refugo"],
+        "retrabalho" => $_POST["retrabalho"],
+        "horas_trabalhadas" => $_POST["horas_trabalhadas"]
+    ];
+
+
+    $novo_registro["taxa_producao"] = calcularTaxaProducao($novo_registro["quantidade_produzida"], $novo_registro["meta"]);
+    $novo_registro["taxa_refugo"] = calcularTaxaRefugo($novo_registro["quantidade_refugo"], $novo_registro["quantidade_produzida"]);
+    $novo_registro["tempo_medio_producao"] = calcularTempoMedioProducao($novo_registro["quantidade_produzida"], $novo_registro["horas_trabalhadas"]);
 
     $dados[] = $novo_registro;
 
@@ -72,9 +63,8 @@ if (file_exists("dados.json")) {
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="content-language" content="pt-br">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registro de Dados</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -84,18 +74,16 @@ if (file_exists("dados.json")) {
         .navbar-custom .user { color: #fff; font-weight: 500; }
         .dados-card {
             background: #fff;
-
             border-radius: 18px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 2.5rem 2rem 2rem 2rem;
+            padding: 2.5rem 2rem;
             max-width: 400px;
             width: 100%;
         }
-            html, body {
-        height: 100vh;
-        overflow: hidden;
+        html, body {
+            height: 100vh;
+            overflow: hidden;
         }
-
         .dados-card .icon {
             display: flex;
             justify-content: center;
@@ -178,13 +166,16 @@ if (file_exists("dados.json")) {
                         <input type="number" class="form-control" id="quantidade_refugo" name="quantidade_refugo" required placeholder="Digite a quantidade de refugo">
                     </div>
                     <div class="mb-3">
-                        <label for="reproducao" class="form-label">Quantidade de Reproduções</label>
-                        <input type="number" class="form-control" id="reproducao" name="reproducao" required placeholder="Digite o tempo de produção">
+                        <label for="Retrabalho" class="form-label">Retrabalho</label>
+                        <input type="number" class="form-control" id="Retrabalho" name="Retrabalho" required placeholder="Digite a quantidade de Retrabalho">
+                    </div>
+                    <div class="mb-3">
+                        <label for="horas_trabalhadas" class="form-label">Horas Trabalhadas</label>
+                        <input type="number" step="0.1" class="form-control" id="horas_trabalhadas" name="horas_trabalhadas" required placeholder="Digite as horas trabalhadas">
                     </div>
                     <button type="submit" class="btn btn-dados w-100">Registrar</button>
                 </form>
             </div>
-        </div>
         </div>
     </div>
 </body>
