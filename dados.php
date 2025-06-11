@@ -53,6 +53,7 @@ if ($busca !== '' && !empty($dados)) {
 } else {
     $dados_filtrados = $dados;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -77,6 +78,16 @@ if ($busca !== '' && !empty($dados)) {
             .brand { font-size: 1rem; }
             .dados-title { font-size: 1.1rem; }
         }
+        #pagination button{
+            border-radius:8px;
+            min-width: 40px;
+        }
+        .btn-outline-primary{
+            background: #fff;
+            border-color: #e0bb9c;
+            margin-bottom: 2px;
+            style: #e0bb9c
+        }
     </style>
 </head>
 <body>
@@ -93,15 +104,16 @@ if ($busca !== '' && !empty($dados)) {
     </nav>
     <div class="container mb-5">
         <h2 class="dados-title">Registros de Produção</h2>
-        <form method="get" class="mb-3">
-            <div class="input-group">
-                <input type="text" name="busca" class="form-control" placeholder="Buscar por uma data" value="<?= htmlspecialchars($busca) ?>">
-                <button class="btn btn-primary" type="submit">Buscar</button>
-                <?php if($busca !== ''): ?>
-                    <a href="dados.php" class="btn btn-secondary">Limpar</a>
-                <?php endif; ?>
-            </div>
-        </form>
+        <div class="container">
+         <form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="date" name="data_inicio" class="form-control" style="max-width: 150px;">
+        <input type="date" name="data_fim" class="form-control" style="max-width: 150px;">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+        <?php if ($busca !== ''): ?>
+            <a href="inicial.php" class="btn btn-secondary">Limpar</a>
+        <?php endif; ?>
+    </div>
         <div class="table-responsive">
             <table class="table table-bordered table-custom">
                 <thead>
@@ -137,5 +149,81 @@ if ($busca !== '' && !empty($dados)) {
             </table>
         </div>
     </div>
+    <script>
+    const table = document.querySelector("table tbody");
+    const rows = Array.from(table.querySelectorAll("tr"));
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let currentSortColumn = null;
+    let currentSortAsc = true;
+
+    function paginate(rows, page, rowsPerPage) {
+        const start = (page - 1) * rowsPerPage;
+        return rows.slice(start, start + rowsPerPage);
+    }
+
+    function renderTable(dataRows) {
+        table.innerHTML = "";
+        dataRows.forEach(row => table.appendChild(row));
+    }
+
+    function updateTable() {
+        const paginatedRows = paginate(rows, currentPage, rowsPerPage);
+        renderTable(paginatedRows);
+        renderPaginationControls();
+    }
+
+    function renderPaginationControls() {
+        let pagination = document.getElementById("pagination");
+        if (!pagination) {
+            pagination = document.createElement("div");
+            pagination.id = "pagination";
+            pagination.className = "mt-3 d-flex justify-content-center";
+            table.parentElement.appendChild(pagination);
+        }
+        pagination.innerHTML = "";
+
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.textContent = i;
+            btn.className = "btn btn-sm mx-1 " + (i === currentPage ? "btn-primary" : "btn-outline-primary");
+            btn.onclick = () => {
+                currentPage = i;
+                updateTable();
+            };
+            pagination.appendChild(btn);
+        }
+    }
+
+    function sortTableByColumn(columnIndex) {
+        const type = columnIndex === 0 ? "string" : "number";
+        rows.sort((a, b) => {
+            const aText = a.children[columnIndex].textContent.trim();
+            const bText = b.children[columnIndex].textContent.trim();
+
+            let aVal = type === "number" ? parseFloat(aText.replace(",", ".")) : aText;
+            let bVal = type === "number" ? parseFloat(bText.replace(",", ".")) : bText;
+
+            if (aVal < bVal) return currentSortAsc ? -1 : 1;
+            if (aVal > bVal) return currentSortAsc ? 1 : -1;
+            return 0;
+        });
+
+        currentSortAsc = (currentSortColumn === columnIndex) ? !currentSortAsc : true;
+        currentSortColumn = columnIndex;
+        currentPage = 1;
+        updateTable();
+    }
+
+
+    document.querySelectorAll("thead th").forEach((th, index) => {
+        th.style.cursor = "pointer";
+        th.addEventListener("click", () => sortTableByColumn(index));
+        
+    });
+
+    updateTable();
+</script>
 </body>
 </html>
