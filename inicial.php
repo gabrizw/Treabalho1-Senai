@@ -41,6 +41,44 @@ foreach ($vendas as $i => $venda) {
 
 $json = file_get_contents("dados.json");
 $dados = json_decode($json, true);
+$data_inicio = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : '';
+$data_fim = isset($_GET['data_fim']) ? $_GET['data_fim'] : '';
+
+$filtrar = $data_inicio && $data_fim;
+
+if ($filtrar) {
+    
+    $datas_semana = [
+        date('D-m-y', strtotime('monday this week')),
+        date('D-m-y', strtotime('tuesday this week')),
+        date('D-m-y', strtotime('wednesday this week')),
+        date('D-m-y', strtotime('thursday this week')),
+        date('D-m-y', strtotime('friday this week')),
+        date('D-m-y', strtotime('saturday this week')),
+        date('D-m-y', strtotime('sunday this week')),
+    ];
+
+    $filtrados = [];
+    foreach ($datas_semana as $i => $data) {
+        if ($data >= $data_inicio && $data <= $data_fim) {
+            $filtrados['dias'][] = $dias[$i];
+            $filtrados['vendas'][] = $vendas[$i];
+            $filtrados['retrabalhos'][] = $retrabalhos[$i];
+            $filtrados['perdas'][] = $perdas[$i];
+            $filtrados['refugos'][] = $refugos[$i];
+            $filtrados['taxas_producao'][] = $taxas_producao[$i];
+            $filtrados['taxas_refugo'][] = $taxas_refugo[$i];
+        }
+    }
+    
+    $dias = $filtrados['dias'] ?? [];
+    $vendas = $filtrados['vendas'] ?? [];
+    $retrabalhos = $filtrados['retrabalhos'] ?? [];
+    $perdas = $filtrados['perdas'] ?? [];
+    $refugos = $filtrados['refugos'] ?? [];
+    $taxas_producao = $filtrados['taxas_producao'] ?? [];
+    $taxas_refugo = $filtrados['taxas_refugo'] ?? [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -90,7 +128,35 @@ $dados = json_decode($json, true);
         table th, table td {
             color: #333;
         }
-        .btn.btn-primary { background: #e0bb9c; border-color: #e0bb9c; }
+        .btn.btn-primary { background: #e0bb9c; border-color: #e0bb9c; border-radius: 8px; }
+        html ::-webkit-scrollbar {
+        width: 10px;
+        }
+
+        html ::-webkit-scrollbar-thumb {
+        border-radius: 50px;
+        background: #e0bb9c;
+        }
+
+        html ::-webkit-scrollbar-track {
+        background: #f7eee6;
+        }
+        .form-control {
+            background: #f7eee6;
+            border-color: #e0bb9c;
+            position: relative;
+            color: #e0bb9c;
+        }
+        .brand{
+            font-family:Merriweather;
+        }
+        .row.mt-4.justify-content-center{
+            width: 100%;
+            height: 40vh;
+            max-width: 100%;
+            display: flex;
+            justify-content: center;
+        }
     </style>
 
 </head>
@@ -108,14 +174,15 @@ $dados = json_decode($json, true);
         
     <div class="container">
          <form method="get" class="mb-3">
-            <div class="input-group">
-                <input type="text" name="busca" class="form-control" placeholder="Buscar por uma data (ainda não está funcional)" value="<?= htmlspecialchars($busca) ?>">
-                <button class="btn btn-primary" type="submit">Buscar</button>
-                <?php if($busca !== ''): ?>
-                    <a href="inicial.php" class="btn btn-secondary">Limpar</a>
-                <?php endif; ?>
-            </div>
-        </form>
+    <div class="input-group">
+        <input type="date" name="data_inicio" class="form-control" style="max-width: 150px;">
+        <input type="date" name="data_fim" class="form-control" style="max-width: 150px;">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+        <?php if ($busca !== ''): ?>
+            <a href="inicial.php" class="btn btn-secondary">Limpar</a>
+        <?php endif; ?>
+    </div>
+</form>
         <div class="row g-4">
             <div class="col-12 col-md-3">
                 <div class="card text-center">
@@ -327,6 +394,50 @@ $dados = json_decode($json, true);
                 scales: {
                     x: { ticks: { color: '#e0bb9c' } },
                     y: { ticks: { color: '#e0bb9c' } }
+                }
+            }
+        });
+    </script>
+    <div class="row mt-4 justify-content-center">
+        <div class="col-12 col-md-6">
+            <div class="card mb-4">
+                <div class="card-header text-center">
+                    Gráfico de Taxa de Produção
+                </div>
+                <div class="card-body">
+                    <canvas id="taxaProducaoChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const ctxTaxaProducao = document.getElementById('taxaProducaoChart').getContext('2d');
+        const taxaProducaoChart = new Chart(ctxTaxaProducao, {
+            type: 'line',
+            data: {
+                labels: <?php echo json_encode($dias); ?>,
+                datasets: [{
+                    label: 'Taxa de Produção (%)',
+                    data: <?php echo json_encode($taxas_producao); ?>,
+                    borderColor: '#ff9800',
+                      backgroundColor: 'rgba(255,152,0,0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: { color: '#e0bb9c', font: { size: 14 } }
+                    }
+                },
+                scales: {
+                    x: { ticks: { color: '#e0bb9c' } },
+                    y: { 
+                        ticks: { color: '#e0bb9c' },
+                        beginAtZero: true,
+                        max: 100
+                    }
                 }
             }
         });
