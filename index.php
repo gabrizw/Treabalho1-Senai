@@ -34,6 +34,17 @@
             margin-bottom: 1.5rem;
             font-size: 1.7rem;
         }
+        .title h2 {
+            text-align: center; 
+            color: #e0bb9c;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-size: 2.1rem;
+            position: absolute;
+            top: 150px;
+            right: 820px;
+            
+        }
         .form-label {
             color: #a88b6b;
             font-weight: 500;
@@ -66,6 +77,9 @@
     </style>
 </head>
 <body>
+    <div class ="title">
+        <center><h2>Painel de controle</h2></center>
+    </div>
     <div class="login-card">
         <div class="icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#e0bb9c" class="bi bi-person-vcard-fill" viewBox="0 0 16 16">
