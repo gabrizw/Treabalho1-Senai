@@ -22,9 +22,9 @@ if (!isset($_SESSION['nomes'])) {
     $nomes = $_SESSION['nomes'];
 }
 
-function calcularTaxaProducao($quantidade_produzida, $meta) {
-    if ($meta == 0) return 0;
-    return ($quantidade_produzida / $meta) * 100;
+function calcularTaxaProducao($quantidade_produzida, $retrabalho) {
+    if ($retrabalho == 0) return 0;
+    return ($quantidade_produzida / $retrabalho) * 100;
 }
 
 function calcularTaxaRefugo($quantidade_refugo, $quantidade_produzida) {
@@ -49,10 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     ];
 
 
-    $novo_registro["taxa_producao"] = calcularTaxaProducao($novo_registro["quantidade_produzida"], $novo_registro["meta"]);
+    $novo_registro["taxa_producao"] = calcularTaxaProducao($novo_registro["quantidade_produzida"], $novo_registro["retrabalho"]);
     $novo_registro["taxa_refugo"] = calcularTaxaRefugo($novo_registro["quantidade_refugo"], $novo_registro["quantidade_produzida"]);
-    $novo_registro["tempo_medio_producao"] = calcularTempoMedioProducao($novo_registro["quantidade_produzida"], $novo_registro["horas_trabalhadas"]);
-
     $dados[] = $novo_registro;
 
     file_put_contents("dados.json", json_encode($dados, JSON_PRETTY_PRINT));
@@ -132,6 +130,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             .dados-card { padding: 1.5rem 0.5rem 1rem 0.5rem; }
             .dados-card h2 { font-size: 1.1rem; }
         }
+        .brand{
+            font-family:Merriweather;
+        }
+        
     </style>
 </head>
 <body>
@@ -166,8 +168,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="number" class="form-control" id="quantidade_refugo" name="quantidade_refugo" required placeholder="Digite a quantidade de refugo">
                     </div>
                     <div class="mb-3">
-                        <label for="Retrabalho" class="form-label">Retrabalho</label>
-                        <input type="number" class="form-control" id="Retrabalho" name="Retrabalho" required placeholder="Digite a quantidade de Retrabalho">
+                        <label for="retrabalho" class="form-label">Retrabalho</label>
+                        <input type="number" class="form-control" id="retrabalho" name="retrabalho" required placeholder="Digite a quantidade de Retrabalho">
                     </div>
                     <div class="mb-3">
                         <label for="horas_trabalhadas" class="form-label">Horas Trabalhadas</label>
