@@ -83,10 +83,20 @@ if ($busca !== '' && !empty($dados)) {
             min-width: 40px;
         }
         .btn-outline-primary{
-            background: #fff;
+            background: #f7eee6;
             border-color: #e0bb9c;
             margin-bottom: 2px;
-            style: #e0bb9c
+            transition: background 0.2s;
+        }
+        .btn-outline-primary:hover{
+            background: #cfa77e;
+        }
+        .brand{
+            font-family:Merriweather;
+        }
+        .btn.btn-sm.mx-1{
+            border-color: #e0bb9c;
+            color: #000
         }
     </style>
 </head>
@@ -222,7 +232,7 @@ if ($busca !== '' && !empty($dados)) {
         th.addEventListener("click", () => sortTableByColumn(index));
         
     });
-
+    
     updateTable();
 </script>
 </body>
