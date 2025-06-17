@@ -102,7 +102,9 @@ if ($busca !== '' && !empty($dados)) {
 </head>
 <body>
     <nav class="navbar-custom d-flex justify-content-between align-items-center mb-4">
-        <div class="brand">SAPATARIA</div>
+        <div class="brand">
+            <a href="inicial.php" class="text-white me-3" style="color:#fff;text-decoration: none;">SAPATARIA</a>
+        </div>
         <div class="d-flex align-items-center">
             <a href="inicial.php" class="me-3" style="color:#fff;text-decoration: none;">INICIO</a>
             <a href="registrodedados.php" class="me-3" style="color:#fff;text-decoration: none;">REGISTRAR DADOS</a>
@@ -117,8 +119,7 @@ if ($busca !== '' && !empty($dados)) {
         <div class="container">
          <form method="get" class="mb-3">
     <div class="input-group">
-        <input type="date" name="data_inicio" class="form-control" style="max-width: 150px;">
-        <input type="date" name="data_fim" class="form-control" style="max-width: 150px;">
+        <input type="date" name="data" class="form-control" style="max-width: 150px;">
         <button class="btn btn-primary" type="submit">Buscar</button>
         <?php if ($busca !== ''): ?>
             <a href="inicial.php" class="btn btn-secondary">Limpar</a>
