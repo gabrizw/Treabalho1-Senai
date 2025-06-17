@@ -17,68 +17,89 @@ if (!isset($_SESSION['nomes'])) {
     $id = array_search($_SESSION['usuario'], $emails);
     $nomes = $_SESSION['nomes'];
 }
+$dados = file_exists("dados.json") ? json_decode(file_get_contents("dados.json"), true) : [];
 
-$vendas = [140, 160, 130, 150, 170, 120, 130];
-$ganhos = array_map(fn($v) => $v * 50, $vendas);
-$perdas = [10, 12, 8, 15, 9, 11, 10];
-$dias = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-
-$retrabalhos = array_map(fn($v) => round($v * 0.2), $vendas);
-$limite_retrabalhos = array_map(fn($v) => round($v * 0.02), $vendas);
-$refugos = array_map(fn($p) => round($p * 0.3), $perdas);
-$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
-$taxas_producao = [];
-$taxas_refugo = [];
-
-foreach ($vendas as $i => $venda) {
-    $retrabalho = $retrabalhos[$i];
-    $perda = $perdas[$i];
-    $refugo = $refugos[$i];
-
-    $taxas_producao[] = $venda > 0 ? round((($venda - $retrabalho) / $venda) * 100, 1) : 0;
-    $taxas_refugo[] = $perda > 0 ? round(($refugo / $perda) * 100, 1) : 0;
+$dias = [];
+$quantidade_produzida = [];
+$quantidade_refugo = [];
+$retrabalho = [];
+$horas_trabalhadas = [];
+$taxa_producao = [];
+$taxa_refugo = [];
+$limite_retrabalhos = []; // Adicionado para evitar erro
+foreach ($dados as $item) {
+    $dias[] = $item['data'];
+    $quantidade_produzida[] = (int)$item['quantidade_produzida'];
+    $quantidade_refugo[] = (int)$item['quantidade_refugo'];
+    $retrabalho[] = (int)$item['retrabalho'];
+    $horas_trabalhadas[] = (float)$item['horas_trabalhadas'];
+    $taxa_producao[] = round($item['taxa_producao'], 2);
+    $taxa_refugo[] = round($item['taxa_refugo'], 2);
+    // Preencher arrays auxiliares para filtragem e gráficos
+    $limite_retrabalhos[] = round($item['quantidade_produzida'] * 0.2);
+    $taxas_producao[] = round($item['taxa_producao'], 2);
+    $taxas_refugo[] = round($item['taxa_refugo'], 2);
 }
+    $taxa_producao[] = round($item['taxa_producao'], 2);
+    $taxa_refugo[] = round($item['taxa_refugo'], 2);
+
+
 
 $json = file_get_contents("dados.json");
-$dados = json_decode($json, true);
-$data_inicio = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : '';
-$data_fim = isset($_GET['data_fim']) ? $_GET['data_fim'] : '';
-
-$filtrar = $data_inicio && $data_fim;
-
+$filtrar = !empty($_GET['data_inicio']) && !empty($_GET['data_fim']);
+$data_inicio = $_GET['data_inicio'] ?? null;
+$data_fim = $_GET['data_fim'] ?? null;
 if ($filtrar) {
-    
-    $datas_semana = [
-        date('D-m-y', strtotime('monday this week')),
-        date('D-m-y', strtotime('tuesday this week')),
-        date('D-m-y', strtotime('wednesday this week')),
-        date('D-m-y', strtotime('thursday this week')),
-        date('D-m-y', strtotime('friday this week')),
-        date('D-m-y', strtotime('saturday this week')),
-        date('D-m-y', strtotime('sunday this week')),
+    $filtrados = [
+        'dias' => [],
+        'quantidade_produzida' => [],
+        'retrabalho' => [],
+        'quantidade_refugo' => [],
+        'horas_trabalhadas' => [],
+        'taxa_producao' => [],
+        'taxa_refugo' => [],
+        'limite_retrabalhos' => [],
+        'taxas_producao' => [],
+        'taxas_refugo' => [],
     ];
-
-    $filtrados = [];
-    foreach ($datas_semana as $i => $data) {
+    foreach ($dias as $i => $data) {
         if ($data >= $data_inicio && $data <= $data_fim) {
             $filtrados['dias'][] = $dias[$i];
-            $filtrados['vendas'][] = $vendas[$i];
-            $filtrados['retrabalhos'][] = $retrabalhos[$i];
-            $filtrados['perdas'][] = $perdas[$i];
-            $filtrados['refugos'][] = $refugos[$i];
+            $filtrados['quantidade_produzida'][] = $quantidade_produzida[$i];
+            $filtrados['retrabalho'][] = $retrabalho[$i];
+            $filtrados['quantidade_refugo'][] = $quantidade_refugo[$i];
+            $filtrados['horas_trabalhadas'][] = $horas_trabalhadas[$i];
+            $filtrados['taxa_producao'][] = $taxa_producao[$i];
+            $filtrados['taxa_refugo'][] = $taxa_refugo[$i];
+            $filtrados['limite_retrabalhos'][] = $limite_retrabalhos[$i];
             $filtrados['taxas_producao'][] = $taxas_producao[$i];
             $filtrados['taxas_refugo'][] = $taxas_refugo[$i];
         }
     }
-    
-    $dias = $filtrados['dias'] ?? [];
+    $dias = $filtrados['dias'];
+    $quantidade_produzida = $filtrados['quantidade_produzida'];
+    $retrabalho = $filtrados['retrabalho'];
+    $quantidade_refugo = $filtrados['quantidade_refugo'];
+    $horas_trabalhadas = $filtrados['horas_trabalhadas'];
+    $taxa_producao = $filtrados['taxa_producao'];
+    $taxa_refugo = $filtrados['taxa_refugo'];
+    $limite_retrabalhos = $filtrados['limite_retrabalhos'];
+    $taxas_producao = $filtrados['taxas_producao'];
+    $taxas_refugo = $filtrados['taxas_refugo'];
+}
     $vendas = $filtrados['vendas'] ?? [];
     $retrabalhos = $filtrados['retrabalhos'] ?? [];
     $perdas = $filtrados['perdas'] ?? [];
     $refugos = $filtrados['refugos'] ?? [];
     $taxas_producao = $filtrados['taxas_producao'] ?? [];
     $taxas_refugo = $filtrados['taxas_refugo'] ?? [];
-}
+
+
+
+
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -152,7 +173,7 @@ if ($filtrar) {
         }
         .row.mt-4.justify-content-center{
             width: 100%;
-            height: 40vh;
+            height: 70vh;
             max-width: 100%;
             display: flex;
             justify-content: center;
@@ -162,9 +183,11 @@ if ($filtrar) {
 </head>
 <body>
     <nav class="navbar-custom d-flex justify-content-between align-items-center">
-        <div class="brand">SAPATARIA</div>
+        <div class="brand">
+            <a href="inicial.php" class="text-white me-3" style="color:#fff;text-decoration: none;">SAPATARIA</a>
+        </div>
         <div class="d-flex align-items-center">
-            <a href="inicial.php" class="text-white me-3" style="color:#fff;text-decoration: none;">INICIO</a>
+            <a href="inicial.php" class="me-3" style="color:#fff;text-decoration: none;">INICIO</a>
             <a href="registrodedados.php" class="me-3" style="color:#fff;text-decoration: none;">REGISTRAR DADOS</a>
             <a href="dados.php" class="me-3" style="color:#fff;text-decoration: none;">DADOS</a>
         <div class="user">
@@ -175,10 +198,10 @@ if ($filtrar) {
     <div class="container">
          <form method="get" class="mb-3">
     <div class="input-group">
-        <input type="date" name="data_inicio" class="form-control" style="max-width: 150px;">
-        <input type="date" name="data_fim" class="form-control" style="max-width: 150px;">
+        <input type="date" name="data_inicio" class="form-control" style="max-width: 150px;" value="<?php echo htmlspecialchars($_GET['data_inicio'] ?? ''); ?>">
+        <input type="date" name="data_fim" class="form-control" style="max-width: 150px;" value="<?php echo htmlspecialchars($_GET['data_fim'] ?? ''); ?>">
         <button class="btn btn-primary" type="submit">Buscar</button>
-        <?php if ($busca !== ''): ?>
+        <?php if (!empty($_GET['data_inicio']) || !empty($_GET['data_fim'])): ?>
             <a href="inicial.php" class="btn btn-secondary">Limpar</a>
         <?php endif; ?>
     </div>
@@ -188,7 +211,7 @@ if ($filtrar) {
                 <div class="card text-center">
                     <div class="card-header">Vendas</div>
                     <div class="card-body">
-                        <div class="stat"><?php echo array_sum($vendas); ?></div>
+                        <div class="stat"><?php echo array_sum($quantidade_produzida); ?></div>
                         <div class="stat-label">Total na semana</div>
                     </div>
                 </div>
@@ -215,7 +238,7 @@ if ($filtrar) {
                 <div class="card text-center">
                     <div class="card-header">Retrabalhos</div>
                     <div class="card-body">
-                        <div class="stat"><?php echo array_sum($retrabalhos); ?></div>
+                        <div class="stat"><?php echo array_sum($retrabalho); ?></div>
                         <div class="stat-label">20% das vendas (Limite: <?php echo array_sum($limite_retrabalhos); ?>)</div>
                     </div>
                 </div>
@@ -261,26 +284,26 @@ if ($filtrar) {
                     <div class="card-header text-center">Tabela de Dados e Indicadores</div>
                     <div class="card-body table-responsive">
                         <table class="table table-bordered table-striped text-center">
-                            <thead class="table">
-                                <tr>
-                                    <th>Dia</th>
-                                    <th>Vendas</th>
-                                    <th>Retrabalhos</th>
-                                    <th>Perdas</th>
-                                    <th>Refugos</th>
-                                    <th>Taxa de Produção (%)</th>
-                                    <th>Taxa de Refugo (%)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($dias as $i => $dia): ?>
+                                <?php foreach ($dias as $i => $dias): ?>
                                     <tr>
-                                        <td><?= $dia ?></td>
-                                        <td><?= $vendas[$i] ?></td>
-                                        <td><?= $retrabalhos[$i] ?></td>
-                                        <td><?= $perdas[$i] ?></td>
-                                        <td><?= $refugos[$i] ?></td>
-                                        <td><?= $taxas_producao[$i] ?>%</td>
+                                        <td><?= $dias ?></td>
+                                        <td><?= $quantidade_produzida[$i] ?? '' ?></td>
+                                        <td><?= $retrabalho[$i] ?? '' ?></td>
+                                        <td><?= $quantidade_refugo[$i] ?? '' ?></td>
+                                        <td><?= $horas_trabalhadas[$i] ?? '' ?></td>
+                                        <td><?= $taxa_producao[$i] ?? '' ?>%</td>
+                                        <td><?= $taxa_refugo[$i] ?? '' ?>%</td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <tbody>
+                                <?php foreach ($dias as $i => $dias): ?>
+                                    <tr>
+                                        <td><?= $dias ?></td>
+                                        <td><?= $quantidade_produzida[$i] ?></td>
+                                        <td><?= $quantidade_refugo[$i] ?></td>
+                                        <td><?= $retrabalho[$i] ?></td>
+                                        <td><?= $horas_trabalhadas[$i] ?></td>
+                                        <td><?= $taxa_producao[$i] ?>%</td>
                                         <td><?= $taxas_refugo[$i] ?>%</td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -301,23 +324,15 @@ if ($filtrar) {
                 datasets: [
                     {
                         label: 'Vendas',
-                        data: <?php echo json_encode($vendas); ?>,
+                        data: <?php echo json_encode($quantidade_produzida); ?>,
                         borderColor: '#57abf1',
                         backgroundColor: 'rgba(224,187,156,0.2)',
                         tension: 0.3,
                         fill: true
                     },
                     {
-                        label: 'Ganhos',
-                        data: <?php echo json_encode($ganhos); ?>,
-                        borderColor: '#07cb59',
-                        backgroundColor: 'rgba(240,221,206,0.2)',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
                         label: 'Perdas',
-                        data: <?php echo json_encode($perdas); ?>,
+                        data: <?php echo json_encode($quantidade_refugo); ?>,
                         borderColor: '#e92e42',
                         backgroundColor: 'rgba(232,204,181,0.2)',
                         tension: 0.3,
@@ -325,7 +340,7 @@ if ($filtrar) {
                     },
                     {
                         label: 'Retrabalhos (20%)',
-                        data: <?php echo json_encode($retrabalhos); ?>,
+                        data: <?php echo json_encode($retrabalho); ?>,
                         borderColor: '#49226e',
                         backgroundColor: 'rgba(255,111,97,0.1)',
                         tension: 0.3,
@@ -379,7 +394,7 @@ if ($filtrar) {
                 labels: <?php echo json_encode($dias); ?>,
                 datasets: [{
                     label: 'Refugos Perdidos',
-                    data: <?php echo json_encode($refugos); ?>,
+                    data: <?php echo json_encode($quantidade_refugo); ?>,
                     backgroundColor: 'rgba(73,34,110,0.5)',
                     borderColor: '#49226e',
                     borderWidth: 2
@@ -418,7 +433,7 @@ if ($filtrar) {
                 labels: <?php echo json_encode($dias); ?>,
                 datasets: [{
                     label: 'Taxa de Produção (%)',
-                    data: <?php echo json_encode($taxas_producao); ?>,
+                    data: <?php echo json_encode($taxa_producao); ?>,
                     borderColor: '#ff9800',
                       backgroundColor: 'rgba(255,152,0,0.1)',
                     tension: 0.3,
@@ -436,7 +451,7 @@ if ($filtrar) {
                     y: { 
                         ticks: { color: '#e0bb9c' },
                         beginAtZero: true,
-                        max: 100
+                        max: 2000
                     }
                 }
             }
