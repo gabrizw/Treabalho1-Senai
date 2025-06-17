@@ -1,7 +1,7 @@
 <?php
 session_start();
 date_default_timezone_set('America/Sao_Paulo');
-$data_hora_sp = date('d-m-y h:i:s');
+$data_hora_sp = date('d-m-y');
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: index.php");
@@ -138,7 +138,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <nav class="navbar-custom d-flex justify-content-between align-items-center mb-4">
-        <div class="brand">SAPATARIA</div>
+        <div class="brand">
+            <a href="inicial.php" class="text-white me-3" style="color:#fff;text-decoration: none;">SAPATARIA</a>
+        </div>
         <div class="d-flex align-items-center">
             <a href="inicial.php" class="me-3" style="color:#fff;text-decoration: none;">INICIO</a>
             <a href="registrodedados.php" class="me-3" style="color:#fff;text-decoration: none;">REGISTRAR DADOS</a>
